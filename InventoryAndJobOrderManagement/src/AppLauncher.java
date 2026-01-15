@@ -8,7 +8,7 @@ public class AppLauncher{
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new LoginUI()  .setVisible(true);
+                new AdminDashboard().setVisible(true);
             }
         });
     }

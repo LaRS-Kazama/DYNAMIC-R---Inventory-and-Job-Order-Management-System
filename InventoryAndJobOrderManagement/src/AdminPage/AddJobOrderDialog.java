@@ -26,24 +26,26 @@ public class AddJobOrderDialog extends JDialog {
     public AddJobOrderDialog(JFrame parent, JTable jobOrderTable) {
         super(parent, "Add New Job Order", true);
 
-        this.jobOrderTable = jobOrderTable;  // IMPORTANT: Initialize table reference
+        this.jobOrderTable = jobOrderTable;
 
-        setSize(750, 900);
+        setSize(710, 750);  // FIXED: Adjusted size
         setLocationRelativeTo(parent);
+        setLayout(new BorderLayout());  // FIXED: Use BorderLayout
 
+        // FIXED: Create scrollable content panel
         JPanel contentPanel = new JPanel(null);
-        contentPanel.setPreferredSize(new Dimension(700, 1100));
+        contentPanel.setPreferredSize(new Dimension(680, 1050));  // FIXED: Set preferred size for scrolling
         contentPanel.setBackground(Color.WHITE);
 
         JLabel title = new JLabel("ADD NEW JOB ORDER", SwingConstants.CENTER);
-        title.setBounds(0, 10, 700, 40);
+        title.setBounds(0, 10, 680, 40);
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
         contentPanel.add(title);
 
-        int y = 80;
+        int y = 70;
 
         // ------- BASIC JOB INFO -------
-        JPanel basicPanel = createSectionPanel("Basic Job Order Information", 30, y, 630, 240);
+        JPanel basicPanel = createSectionPanel("Basic Job Order Information", 20, y, 640, 240);
         contentPanel.add(basicPanel);
 
         int bx = 20, by = 40;
@@ -52,7 +54,7 @@ public class AddJobOrderDialog extends JDialog {
 
         basicPanel.add(new JLabel("Department:")).setBounds(bx, by, 150, 30);
         cmbDepartment = new JComboBox<>(new String[]{"Mechanical", "Electrical", "Painting", "Inspection"});
-        cmbDepartment.setBounds(180, by, 400, 30);
+        cmbDepartment.setBounds(180, by, 420, 30);
         basicPanel.add(cmbDepartment);
         by += 40;
 
@@ -65,20 +67,20 @@ public class AddJobOrderDialog extends JDialog {
         spinnerDeadline = new JSpinner(dateModel);
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinnerDeadline, "yyyy-MM-dd");
         spinnerDeadline.setEditor(dateEditor);
-        spinnerDeadline.setBounds(180, by, 400, 30);
+        spinnerDeadline.setBounds(180, by, 420, 30);
         basicPanel.add(spinnerDeadline);
 
         y += 260;
 
         // ------- JOB DESCRIPTION -------
-        JPanel scopePanel = createSectionPanel("Job Scope & Customization", 30, y, 630, 210);
+        JPanel scopePanel = createSectionPanel("Job Scope & Customization", 20, y, 640, 240);
         contentPanel.add(scopePanel);
 
         int sy = 40;
         txtJobDescription = addArea(scopePanel, "Job Description:", sy);
-        sy += 60;
+        sy += 70;
         txtCustomization = addArea(scopePanel, "Customization:", sy);
-        sy += 60;
+        sy += 70;
 
         // MATERIALS DROPDOWN
         JLabel lbl = new JLabel("Materials Required:");
@@ -86,15 +88,15 @@ public class AddJobOrderDialog extends JDialog {
         scopePanel.add(lbl);
 
         cmbMaterials = new JComboBox<>();
-        cmbMaterials.setBounds(180, sy, 400, 30);
+        cmbMaterials.setBounds(180, sy, 420, 30);
         scopePanel.add(cmbMaterials);
 
         loadMaterialsFromInventory();
 
-        y += 230;
+        y += 260;
 
         // ------- PROCESS PANEL -------
-        JPanel processPanel = createSectionPanel("Process & Status", 30, y, 630, 220);
+        JPanel processPanel = createSectionPanel("Process & Status", 20, y, 640, 220);
         contentPanel.add(processPanel);
 
         int py = 40;
@@ -103,7 +105,7 @@ public class AddJobOrderDialog extends JDialog {
         cmbStage = new JComboBox<>(new String[]{
                 "Receiving", "Dismantling", "Rebuilding", "Painting", "Inspection", "Completed"
         });
-        cmbStage.setBounds(180, py, 400, 30);
+        cmbStage.setBounds(180, py, 420, 30);
         processPanel.add(cmbStage);
 
         py += 40;
@@ -113,7 +115,7 @@ public class AddJobOrderDialog extends JDialog {
         cmbStatus = new JComboBox<>(new String[]{
                 "In Progress", "Pending", "On Hold", "Completed"
         });
-        cmbStatus.setBounds(180, py, 400, 30);
+        cmbStatus.setBounds(180, py, 420, 30);
         processPanel.add(cmbStatus);
 
         py += 40;
@@ -122,17 +124,18 @@ public class AddJobOrderDialog extends JDialog {
         y += 240;
 
         // ------- ATTACHMENTS -------
-        JPanel attachPanel = createSectionPanel("Attachments", 30, y, 630, 150);
+        JPanel attachPanel = createSectionPanel("Attachments", 20, y, 640, 120);
         contentPanel.add(attachPanel);
 
         txtReference = addField(attachPanel, "Reference No.:", 20, 40);
 
         JButton btnAttach = new JButton("Attach File");
-        btnAttach.setBounds(400, 40, 120, 30);
+        btnAttach.setBounds(480, 40, 120, 30);
         attachPanel.add(btnAttach);
 
         lblAttachment = new JLabel("No file selected");
-        lblAttachment.setBounds(180, 80, 350, 30);
+        lblAttachment.setBounds(180, 75, 350, 30);
+        lblAttachment.setFont(new Font("SansSerif", Font.PLAIN, 11));
         attachPanel.add(lblAttachment);
 
         btnAttach.addActionListener(e -> {
@@ -143,18 +146,31 @@ public class AddJobOrderDialog extends JDialog {
             }
         });
 
+        y += 140;
+
         // ------- SAVE BUTTON -------
         JButton btnSave = new JButton("Save Job Order");
-        btnSave.setBounds(200, y + 200, 180, 40);
+        btnSave.setBounds(180, y, 180, 45);
         btnSave.setBackground(AppColors.PRIMARY_RED);
         btnSave.setForeground(Color.WHITE);
         btnSave.setFont(new Font("SansSerif", Font.BOLD, 18));
+        btnSave.addActionListener(e -> saveJobOrder());
         contentPanel.add(btnSave);
 
-        btnSave.addActionListener(e -> saveJobOrder());
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.setBounds(380, y, 150, 45);
+        btnCancel.setBackground(Color.GRAY);
+        btnCancel.setForeground(Color.WHITE);
+        btnCancel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        btnCancel.addActionListener(e -> dispose());
+        contentPanel.add(btnCancel);
 
-        JScrollPane scrollPane = new JScrollPane(contentPanel);
-        add(scrollPane);
+        // FIXED: Add scroll pane to the dialog
+        JScrollPane scrollPanel = new JScrollPane(contentPanel);
+        scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPanel, BorderLayout.CENTER);
     }
 
     // ---- SAVE JOB ORDER ----
@@ -175,7 +191,7 @@ public class AddJobOrderDialog extends JDialog {
             Date utilDate = (Date) spinnerDeadline.getValue();
             java.sql.Date sqlDeadline = new java.sql.Date(utilDate.getTime());
 
-            System.out.println("Saving job order...");  // Debug
+            System.out.println("Saving job order...");
             System.out.println("Client: " + txtClientName.getText());
             System.out.println("Deadline: " + sqlDeadline);
 
@@ -199,7 +215,7 @@ public class AddJobOrderDialog extends JDialog {
                 return;
             }
 
-            System.out.println("Job order saved successfully!");  // Debug
+            System.out.println("Job order saved successfully!");
 
             // ---- REFRESH JOB ORDER TABLE ----
             refreshJobOrderTable();
@@ -219,7 +235,7 @@ public class AddJobOrderDialog extends JDialog {
 
     private void refreshJobOrderTable() {
         try {
-            System.out.println("Refreshing table...");  // Debug
+            System.out.println("Refreshing table...");
 
             if (jobOrderTable == null) {
                 System.err.println("ERROR: jobOrderTable is null!");
@@ -227,16 +243,16 @@ public class AddJobOrderDialog extends JDialog {
             }
 
             List<Object[]> rows = JobOrderDao.getAllJobOrders();
-            System.out.println("Retrieved " + rows.size() + " rows from database");  // Debug
+            System.out.println("Retrieved " + rows.size() + " rows from database");
 
             DefaultTableModel model = (DefaultTableModel) jobOrderTable.getModel();
-            model.setRowCount(0);  // Clear existing rows
+            model.setRowCount(0);
 
             for (Object[] row : rows) {
                 model.addRow(row);
             }
 
-            System.out.println("Table refreshed with " + model.getRowCount() + " rows");  // Debug
+            System.out.println("Table refreshed with " + model.getRowCount() + " rows");
 
         } catch (Exception e) {
             System.err.println("Error refreshing table:");
@@ -247,14 +263,13 @@ public class AddJobOrderDialog extends JDialog {
     private void loadMaterialsFromInventory() {
         cmbMaterials.removeAllItems();
 
-        // Use getAvailableItemNamesForJobOrder() to exclude unusable items
         List<String> items = InventoryDao.getAvailableItemNamesForJobOrder();
 
         if (items.isEmpty()) {
             cmbMaterials.addItem("No materials available");
             cmbMaterials.setEnabled(false);
         } else {
-            cmbMaterials.addItem("-- Select Material --"); // Add placeholder
+            cmbMaterials.addItem("-- Select Material --");
             for (String s : items) {
                 cmbMaterials.addItem(s);
             }
@@ -268,7 +283,7 @@ public class AddJobOrderDialog extends JDialog {
         p.add(l);
 
         JTextField f = new JTextField();
-        f.setBounds(180, y, 400, 30);
+        f.setBounds(180, y, 420, 30);
         p.add(f);
         return f;
     }
@@ -283,7 +298,7 @@ public class AddJobOrderDialog extends JDialog {
         a.setWrapStyleWord(true);
 
         JScrollPane sp = new JScrollPane(a);
-        sp.setBounds(180, y, 400, 50);
+        sp.setBounds(180, y, 420, 60);
         p.add(sp);
         return a;
     }
@@ -292,6 +307,7 @@ public class AddJobOrderDialog extends JDialog {
         JPanel p = new JPanel(null);
         p.setBorder(BorderFactory.createTitledBorder(title));
         p.setBounds(x, y, w, h);
+        p.setBackground(Color.WHITE);
         return p;
     }
 }

@@ -16,7 +16,7 @@ public class UpdateJobOrderDialog extends JDialog {
     private JTextField txtClientName, txtEmployee, txtReference;
     private JSpinner spinnerDeadline;
     private JComboBox<String> cmbDepartment, cmbStage, cmbStatus, cmbMaterials;
-    private JTextArea txtJobDescription, txtCustomization, txtNotes;
+    private JTextArea txtJobDescription, txtCustomization, txtProgressNotes;
     private JLabel lblAttachment;
     private JTable table;
     private int rowIndex;
@@ -28,47 +28,47 @@ public class UpdateJobOrderDialog extends JDialog {
         this.table = orderTable;
         this.rowIndex = row;
 
-        setSize(600, 850);
+        setSize(710, 750);
         setLocationRelativeTo(parent);
+        setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel(null);
-        mainPanel.setBackground(Color.WHITE);
+        // Create scrollable content panel
+        JPanel contentPanel = new JPanel(null);
+        contentPanel.setPreferredSize(new Dimension(680, 1050));
+        contentPanel.setBackground(Color.WHITE);
 
         JLabel title = new JLabel("UPDATE JOB ORDER", SwingConstants.CENTER);
-        title.setFont(new Font("SansSerif", Font.BOLD, 22));
-        title.setBounds(0, 20, 600, 35);
-        mainPanel.add(title);
+        title.setBounds(0, 10, 680, 40);
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        contentPanel.add(title);
 
-        int y = 80;
+        int y = 70;
 
-        // ------- BASIC INFO SECTION -------
-        JPanel basicPanel = createSection("Basic Information", 30, y, 540, 280);
-        mainPanel.add(basicPanel);
+        // ------- BASIC JOB INFO -------
+        JPanel basicPanel = createSectionPanel("Basic Job Order Information", 20, y, 640, 240);
+        contentPanel.add(basicPanel);
 
-        int by = 40;
-        txtClientName = addField(basicPanel, "Client / Project:", 20, by,
-                getTableValue(row, 2));
-        by += 45;
+        int bx = 20, by = 40;
+        txtClientName = addField(basicPanel, "Client / Project:", bx, by, getTableValue(row, 2));
+        by += 40;
 
-        cmbDepartment = addCombo(basicPanel, "Department:", 20, by,
-                new String[]{"Mechanical", "Electrical", "Painting", "Inspection"},
-                getTableValue(row, 3));
-        by += 45;
+        basicPanel.add(new JLabel("Department:")).setBounds(bx, by, 150, 30);
+        cmbDepartment = new JComboBox<>(new String[]{"Mechanical", "Electrical", "Painting", "Inspection"});
+        cmbDepartment.setSelectedItem(getTableValue(row, 3));
+        cmbDepartment.setBounds(180, by, 420, 30);
+        basicPanel.add(cmbDepartment);
+        by += 40;
 
-        txtEmployee = addField(basicPanel, "Assigned Employee:", 20, by,
-                getTableValue(row, 4));
-        by += 45;
+        txtEmployee = addField(basicPanel, "Assigned Employee:", bx, by, getTableValue(row, 4));
+        by += 40;
 
-        // Deadline with JSpinner
-        JLabel lblDeadline = new JLabel("Deadline:");
-        lblDeadline.setBounds(20, by, 150, 25);
-        basicPanel.add(lblDeadline);
-
+        // DEADLINE - JSpinner with Date
+        basicPanel.add(new JLabel("Deadline:")).setBounds(bx, by, 150, 30);
         SpinnerDateModel dateModel = new SpinnerDateModel();
         spinnerDeadline = new JSpinner(dateModel);
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinnerDeadline, "yyyy-MM-dd");
         spinnerDeadline.setEditor(dateEditor);
-        spinnerDeadline.setBounds(180, by, 320, 30);
+        spinnerDeadline.setBounds(180, by, 420, 30);
 
         // Set initial date value
         try {
@@ -86,64 +86,76 @@ public class UpdateJobOrderDialog extends JDialog {
             ex.printStackTrace();
         }
         basicPanel.add(spinnerDeadline);
-        by += 45;
 
-        cmbStage = addCombo(basicPanel, "Stage:", 20, by,
-                new String[]{"Receiving", "Dismantling", "Rebuilding", "Painting", "Inspection", "Completed"},
-                getTableValue(row, 6));
-        by += 45;
+        y += 260;
 
-        cmbStatus = addCombo(basicPanel, "Status:", 20, by,
-                new String[]{"In Progress", "Pending", "On Hold", "Completed"},
-                getTableValue(row, 7));
+        // ------- JOB DESCRIPTION -------
+        JPanel scopePanel = createSectionPanel("Job Scope & Customization", 20, y, 640, 240);
+        contentPanel.add(scopePanel);
 
-        y += 300;
+        int sy = 40;
+        txtJobDescription = addArea(scopePanel, "Job Description:", sy, getTableValue(row, 9));
+        sy += 70;
+        txtCustomization = addArea(scopePanel, "Customization:", sy, getTableValue(row, 10));
+        sy += 70;
 
-        // ------- JOB DETAILS SECTION -------
-        JPanel detailsPanel = createSection("Job Details", 30, y, 540, 280);
-        mainPanel.add(detailsPanel);
-
-        int dy = 40;
-
-        // Materials dropdown
-        JLabel lblMaterials = new JLabel("Materials:");
-        lblMaterials.setBounds(20, dy, 150, 25);
-        detailsPanel.add(lblMaterials);
+        // MATERIALS DROPDOWN
+        JLabel lbl = new JLabel("Materials Required:");
+        lbl.setBounds(20, sy, 150, 30);
+        scopePanel.add(lbl);
 
         cmbMaterials = new JComboBox<>();
+        cmbMaterials.setBounds(180, sy, 420, 30);
+        scopePanel.add(cmbMaterials);
+
         loadMaterialsFromInventory();
         cmbMaterials.setSelectedItem(getTableValue(row, 8));
-        cmbMaterials.setBounds(180, dy, 320, 30);
-        detailsPanel.add(cmbMaterials);
-        dy += 45;
 
-        txtJobDescription = addArea(detailsPanel, "Job Description:", 20, dy,
-                getTableValue(row, 9));
-        dy += 70;
+        y += 260;
 
-        txtCustomization = addArea(detailsPanel, "Customization:", 20, dy,
-                getTableValue(row, 10));
-        dy += 70;
+        // ------- PROCESS PANEL -------
+        JPanel processPanel = createSectionPanel("Process & Status", 20, y, 640, 220);
+        contentPanel.add(processPanel);
 
-        txtNotes = addArea(detailsPanel, "Notes:", 20, dy,
-                getTableValue(row, 11));
+        int py = 40;
+        processPanel.add(new JLabel("Current Stage:")).setBounds(20, py, 150, 30);
 
-        y += 300;
+        cmbStage = new JComboBox<>(new String[]{
+                "Receiving", "Dismantling", "Rebuilding", "Painting", "Inspection", "Completed"
+        });
+        cmbStage.setSelectedItem(getTableValue(row, 6));
+        cmbStage.setBounds(180, py, 420, 30);
+        processPanel.add(cmbStage);
 
-        // ------- REFERENCE & ATTACHMENT SECTION -------
-        JPanel attachPanel = createSection("Reference & Attachments", 30, y, 540, 120);
-        mainPanel.add(attachPanel);
+        py += 40;
 
-        txtReference = addField(attachPanel, "Reference No.:", 20, 40,
-                getTableValue(row, 12));
+        // STATUS DROPDOWN
+        processPanel.add(new JLabel("Status:")).setBounds(20, py, 150, 30);
+        cmbStatus = new JComboBox<>(new String[]{
+                "In Progress", "Pending", "On Hold", "Completed"
+        });
+        cmbStatus.setSelectedItem(getTableValue(row, 7));
+        cmbStatus.setBounds(180, py, 420, 30);
+        processPanel.add(cmbStatus);
 
-        JButton btnAttach = new JButton("Change File");
-        btnAttach.setBounds(380, 40, 120, 30);
+        py += 40;
+        txtProgressNotes = addArea(processPanel, "Progress Notes:", py, getTableValue(row, 11));
+
+        y += 240;
+
+        // ------- ATTACHMENTS -------
+        JPanel attachPanel = createSectionPanel("Attachments", 20, y, 640, 120);
+        contentPanel.add(attachPanel);
+
+        txtReference = addField(attachPanel, "Reference No.:", 20, 40, getTableValue(row, 12));
+
+        JButton btnAttach = new JButton("Attach File");
+        btnAttach.setBounds(480, 40, 120, 30);
         attachPanel.add(btnAttach);
 
         lblAttachment = new JLabel(getTableValue(row, 13).isEmpty() ?
                 "No file attached" : "Current: " + getFileName(getTableValue(row, 13)));
-        lblAttachment.setBounds(180, 80, 320, 25);
+        lblAttachment.setBounds(180, 75, 350, 30);
         lblAttachment.setFont(new Font("SansSerif", Font.PLAIN, 11));
         attachPanel.add(lblAttachment);
 
@@ -151,29 +163,35 @@ public class UpdateJobOrderDialog extends JDialog {
             JFileChooser fc = new JFileChooser();
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 selectedFile = fc.getSelectedFile();
-                lblAttachment.setText("New: " + selectedFile.getName());
+                lblAttachment.setText("Attached: " + selectedFile.getName());
             }
         });
 
-        // ------- BUTTONS -------
+        y += 140;
+
+        // ------- SAVE BUTTON -------
         JButton btnSave = new JButton("Save Changes");
-        btnSave.setBounds(150, y + 160, 150, 40);
+        btnSave.setBounds(180, y, 180, 45);
         btnSave.setBackground(AppColors.PRIMARY_RED);
         btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font("SansSerif", Font.BOLD, 16));
+        btnSave.setFont(new Font("SansSerif", Font.BOLD, 18));
         btnSave.addActionListener(e -> saveJobOrder());
-        mainPanel.add(btnSave);
+        contentPanel.add(btnSave);
 
         JButton btnCancel = new JButton("Cancel");
-        btnCancel.setBounds(320, y + 160, 150, 40);
+        btnCancel.setBounds(380, y, 150, 45);
         btnCancel.setBackground(Color.GRAY);
         btnCancel.setForeground(Color.WHITE);
-        btnCancel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        btnCancel.setFont(new Font("SansSerif", Font.BOLD, 18));
         btnCancel.addActionListener(e -> dispose());
-        mainPanel.add(btnCancel);
+        contentPanel.add(btnCancel);
 
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        add(scrollPane);
+        // Add scroll pane to the dialog
+        JScrollPane scrollPanel = new JScrollPane(contentPanel);
+        scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPanel, BorderLayout.CENTER);
     }
 
     private void saveJobOrder() {
@@ -201,7 +219,6 @@ public class UpdateJobOrderDialog extends JDialog {
             Date utilDate = (Date) spinnerDeadline.getValue();
             java.sql.Date sqlDeadline = new java.sql.Date(utilDate.getTime());
 
-            // FIXED: Use updateJobOrder() instead of addJobOrder()
             boolean ok = JobOrderDao.updateJobOrder(
                     id,
                     txtClientName.getText().trim(),
@@ -230,7 +247,7 @@ public class UpdateJobOrderDialog extends JDialog {
             table.setValueAt(cmbMaterials.getSelectedItem(), rowIndex, 8);
             table.setValueAt(txtJobDescription.getText().trim(), rowIndex, 9);
             table.setValueAt(txtCustomization.getText().trim(), rowIndex, 10);
-            table.setValueAt(txtNotes.getText().trim(), rowIndex, 11);
+            table.setValueAt(txtProgressNotes.getText().trim(), rowIndex, 11);
             table.setValueAt(txtReference.getText().trim(), rowIndex, 12);
 
             if (selectedFile != null) {
@@ -260,6 +277,7 @@ public class UpdateJobOrderDialog extends JDialog {
             cmbMaterials.addItem("No materials available");
             cmbMaterials.setEnabled(false);
         } else {
+            cmbMaterials.addItem("-- Select Material --");
             for (String s : items) {
                 cmbMaterials.addItem(s);
             }
@@ -276,47 +294,34 @@ public class UpdateJobOrderDialog extends JDialog {
         return new java.io.File(path).getName();
     }
 
-    // Helper UI Methods
-    private JTextField addField(JPanel panel, String label, int x, int y, String value) {
+    // ---- Helper UI Methods ----
+    private JTextField addField(JPanel p, String label, int x, int y, String value) {
         JLabel l = new JLabel(label);
-        l.setBounds(x, y, 150, 25);
-        panel.add(l);
+        l.setBounds(x, y, 150, 30);
+        p.add(l);
 
         JTextField f = new JTextField(value);
-        f.setBounds(180, y, 320, 30);
-        panel.add(f);
+        f.setBounds(180, y, 420, 30);
+        p.add(f);
         return f;
     }
 
-    private JComboBox<String> addCombo(JPanel panel, String label, int x, int y,
-                                       String[] items, String selected) {
+    private JTextArea addArea(JPanel p, String label, int y, String value) {
         JLabel l = new JLabel(label);
-        l.setBounds(x, y, 150, 25);
-        panel.add(l);
-
-        JComboBox<String> c = new JComboBox<>(items);
-        c.setBounds(180, y, 320, 30);
-        c.setSelectedItem(selected);
-        panel.add(c);
-        return c;
-    }
-
-    private JTextArea addArea(JPanel panel, String label, int x, int y, String value) {
-        JLabel l = new JLabel(label);
-        l.setBounds(x, y, 150, 25);
-        panel.add(l);
+        l.setBounds(20, y, 150, 30);
+        p.add(l);
 
         JTextArea a = new JTextArea(value);
         a.setLineWrap(true);
         a.setWrapStyleWord(true);
 
         JScrollPane sp = new JScrollPane(a);
-        sp.setBounds(180, y, 320, 60);
-        panel.add(sp);
+        sp.setBounds(180, y, 420, 60);
+        p.add(sp);
         return a;
     }
 
-    private JPanel createSection(String title, int x, int y, int w, int h) {
+    private JPanel createSectionPanel(String title, int x, int y, int w, int h) {
         JPanel p = new JPanel(null);
         p.setBorder(BorderFactory.createTitledBorder(title));
         p.setBounds(x, y, w, h);
