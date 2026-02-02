@@ -15,10 +15,12 @@ public class JobOrderDetailsDialog extends JDialog {
         this.table = orderTable;
         this.rowIndex = row;
 
-        setSize(800, 750);
+        setSize(830, 750);
         setLocationRelativeTo(parent);
+        setLayout(new  BorderLayout());
 
         JPanel mainPanel = new JPanel(null);
+        mainPanel.setPreferredSize(new Dimension(780, 1000));
         mainPanel.setBackground(Color.WHITE);
 
         // ===== HEADER =====
@@ -53,9 +55,9 @@ public class JobOrderDetailsDialog extends JDialog {
         JPanel basicPanel = createSection("Basic Information", 30, y, 740, 180);
         mainPanel.add(basicPanel);
 
-        addDetailRow(basicPanel, "Client / Project:", getTableValue(row, 2), 20, 30);
-        addDetailRow(basicPanel, "Department:", getTableValue(row, 3), 20, 70);
-        addDetailRow(basicPanel, "Assigned Employee:", getTableValue(row, 4), 20, 110);
+        addDetailRow(basicPanel, "Client / Project:", getTableValue(row, 2), 0, 0);
+        addDetailRow(basicPanel, "Department:", getTableValue(row, 3), 0, 1);
+        addDetailRow(basicPanel, "Assigned Employee:", getTableValue(row, 4), 0, 2);
 
         y += 200;
 
@@ -63,7 +65,7 @@ public class JobOrderDetailsDialog extends JDialog {
         JPanel timelinePanel = createSection("Timeline & Status", 30, y, 740, 140);
         mainPanel.add(timelinePanel);
 
-        addDetailRow(timelinePanel, "Deadline:", getTableValue(row, 5), 20, 30);
+        addDetailRow(timelinePanel, "Deadline:", getTableValue(row, 5), 0, 0);
 
         // Stage with color coding
         String stage = getTableValue(row, 6);
@@ -103,51 +105,54 @@ public class JobOrderDetailsDialog extends JDialog {
         JPanel detailsPanel = createSection("Job Scope & Materials", 30, y, 740, 220);
         mainPanel.add(detailsPanel);
 
-        addDetailRow(detailsPanel, "Materials Required:", getTableValue(row, 8), 20, 30);
-        addTextAreaRow(detailsPanel, "Job Description:", getTableValue(row, 9), 20, 70);
-        addTextAreaRow(detailsPanel, "Customization:", getTableValue(row, 10), 400, 70);
+        addDetailRow(detailsPanel, "Materials Required:", getTableValue(row, 8), 0, 0);
+        addTextAreaRow(detailsPanel, "Job Description:", getTableValue(row, 9), 0, 1);
+        addTextAreaRow(detailsPanel, "Customization:", getTableValue(row, 10), 0, 2);
 
         y += 240;
 
         // ===== NOTES & REFERENCES SECTION =====
-        JPanel notesPanel = createSection("Notes & References", 30, y, 740, 180);
+        JPanel notesPanel = createSection("Notes & References", 30, y, 740, 240);
         mainPanel.add(notesPanel);
 
-        addTextAreaRow(notesPanel, "Progress Notes:", getTableValue(row, 11), 20, 30);
-        addDetailRow(notesPanel, "Reference No.:", getTableValue(row, 12), 20, 110);
+        addTextAreaRow(notesPanel, "Progress Notes:", getTableValue(row, 11), 0, 0);
+        addDetailRow(notesPanel, "Reference No.:", getTableValue(row, 12), 0, 1);
 
         // Attachment with open button
         String attachmentPath = getTableValue(row, 13);
         JLabel lblAttachLabel = new JLabel("Attachment:");
         lblAttachLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        lblAttachLabel.setBounds(20, 145, 180, 25);
+        lblAttachLabel.setBounds(20, 185, 180, 25);
         notesPanel.add(lblAttachLabel);
 
         if (attachmentPath != null && !attachmentPath.isEmpty()) {
             String fileName = new File(attachmentPath).getName();
             JLabel lblAttachment = new JLabel(fileName);
             lblAttachment.setFont(new Font("SansSerif", Font.PLAIN, 13));
-            lblAttachment.setBounds(210, 145, 350, 25);
+            lblAttachment.setBounds(210, 185, 350, 25);
             lblAttachment.setForeground(new Color(52, 152, 219));
             notesPanel.add(lblAttachment);
 
             JButton btnOpenFile = new JButton("Open File");
-            btnOpenFile.setBounds(570, 143, 120, 30);
+            btnOpenFile.setBounds(570, 183, 120, 30);
             btnOpenFile.setBackground(new Color(52, 152, 219));
             btnOpenFile.setForeground(Color.WHITE);
             btnOpenFile.addActionListener(e -> openAttachment(attachmentPath));
             notesPanel.add(btnOpenFile);
+
         } else {
             JLabel lblNoAttachment = new JLabel("No attachment");
             lblNoAttachment.setFont(new Font("SansSerif", Font.ITALIC, 13));
             lblNoAttachment.setForeground(Color.GRAY);
-            lblNoAttachment.setBounds(210, 145, 500, 25);
+            lblNoAttachment.setBounds(210, 185, 500, 25);
             notesPanel.add(lblNoAttachment);
         }
 
+        y += 260;
+
         // ===== CLOSE BUTTON =====
         JButton btnClose = new JButton("Close");
-        btnClose.setBounds(320, 680, 160, 40);
+        btnClose.setBounds(320, y, 160, 40);
         btnClose.setBackground(new Color(149, 165, 166));
         btnClose.setForeground(Color.WHITE);
         btnClose.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -155,26 +160,52 @@ public class JobOrderDetailsDialog extends JDialog {
         mainPanel.add(btnClose);
 
         JScrollPane scrollPane = new JScrollPane(mainPanel);
-        add(scrollPane);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);  // Fast mouse wheel scrolling
+        scrollPane.getVerticalScrollBar().setBlockIncrement(100); // Fast page scrolling
+        add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void addDetailRow(JPanel panel, String label, String value, int x, int y) {
+    private void addDetailRow(JPanel panel, String label, String value, int gridx, int gridy) {
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+
         JLabel lblLabel = new JLabel(label);
         lblLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        lblLabel.setBounds(x, y, 180, 25);
-        panel.add(lblLabel);
+
+        gbc.gridx = 0;
+        gbc.gridy = gridy;
+        gbc.weightx = 0;
+        panel.add(lblLabel, gbc);
 
         JLabel lblValue = new JLabel(value != null && !value.isEmpty() ? value : "N/A");
         lblValue.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        lblValue.setBounds(x + 190, y, 500, 25);
-        panel.add(lblValue);
+
+        gbc.gridx = 1;
+        gbc.gridy = gridy;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        panel.add(lblValue, gbc);
     }
 
-    private void addTextAreaRow(JPanel panel, String label, String value, int x, int y) {
+
+    private void addTextAreaRow(JPanel panel, String label, String value, int gridx, int gridy) {
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+
         JLabel lblLabel = new JLabel(label);
         lblLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-        lblLabel.setBounds(x, y, 180, 20);
-        panel.add(lblLabel);
+
+        gbc.gridx = 0;
+        gbc.gridy = gridy;
+        gbc.weightx = 0;
+        panel.add(lblLabel, gbc);
 
         JTextArea txtValue = new JTextArea(value != null && !value.isEmpty() ? value : "N/A");
         txtValue.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -185,9 +216,16 @@ public class JobOrderDetailsDialog extends JDialog {
         txtValue.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         JScrollPane scroll = new JScrollPane(txtValue);
-        scroll.setBounds(x, y + 25, 330, 70);
-        panel.add(scroll);
+        scroll.setPreferredSize(new Dimension(1, 50));
+
+        gbc.gridx = 1;
+        gbc.gridy = gridy;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        panel.add(scroll, gbc);
     }
+
 
     private Color getStageColor(String stage) {
         switch (stage) {
@@ -237,7 +275,7 @@ public class JobOrderDetailsDialog extends JDialog {
     }
 
     private JPanel createSection(String title, int x, int y, int w, int h) {
-        JPanel panel = new JPanel(null);
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
                 title,
@@ -250,4 +288,5 @@ public class JobOrderDetailsDialog extends JDialog {
         panel.setBackground(Color.WHITE);
         return panel;
     }
+
 }

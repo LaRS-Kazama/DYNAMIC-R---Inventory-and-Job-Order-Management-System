@@ -37,12 +37,18 @@ public class AddJobOrderDialog extends JDialog {
         contentPanel.setPreferredSize(new Dimension(680, 1050));  // FIXED: Set preferred size for scrolling
         contentPanel.setBackground(Color.WHITE);
 
+        JPanel headPanel = new JPanel(null);
+        headPanel.setBackground(new Color(22, 160, 133));
+        headPanel.setBounds(0, 0, 680, 80);
+        contentPanel.add(headPanel);
+
         JLabel title = new JLabel("ADD NEW JOB ORDER", SwingConstants.CENTER);
         title.setBounds(0, 10, 680, 40);
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
-        contentPanel.add(title);
+        title.setForeground(Color.white);
+        headPanel.add(title);
 
-        int y = 70;
+        int y = 100;
 
         // ------- BASIC JOB INFO -------
         JPanel basicPanel = createSectionPanel("Basic Job Order Information", 20, y, 640, 240);
@@ -165,11 +171,12 @@ public class AddJobOrderDialog extends JDialog {
         btnCancel.addActionListener(e -> dispose());
         contentPanel.add(btnCancel);
 
-        // FIXED: Add scroll pane to the dialog
+        // FIXED: Add scroll pane to the dialog with faster scrolling
         JScrollPane scrollPanel = new JScrollPane(contentPanel);
         scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPanel.getVerticalScrollBar().setUnitIncrement(20);  // INCREASED: Faster scrolling with mouse wheel
+        scrollPanel.getVerticalScrollBar().setBlockIncrement(100); // ADDED: Faster page up/down scrolling
         add(scrollPanel, BorderLayout.CENTER);
     }
 

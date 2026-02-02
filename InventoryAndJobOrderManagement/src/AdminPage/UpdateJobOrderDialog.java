@@ -37,12 +37,18 @@ public class UpdateJobOrderDialog extends JDialog {
         contentPanel.setPreferredSize(new Dimension(680, 1050));
         contentPanel.setBackground(Color.WHITE);
 
+        JPanel headerPanel = new JPanel(null);
+        headerPanel.setBackground(new Color(155, 89, 182));
+        headerPanel.setBounds(0, 0, 680, 80);
+        contentPanel.add(headerPanel);
+
         JLabel title = new JLabel("UPDATE JOB ORDER", SwingConstants.CENTER);
         title.setBounds(0, 10, 680, 40);
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
-        contentPanel.add(title);
+        title.setForeground(Color.white);
+        headerPanel.add(title);
 
-        int y = 70;
+        int y = 100;
 
         // ------- BASIC JOB INFO -------
         JPanel basicPanel = createSectionPanel("Basic Job Order Information", 20, y, 640, 240);
@@ -190,7 +196,8 @@ public class UpdateJobOrderDialog extends JDialog {
         JScrollPane scrollPanel = new JScrollPane(contentPanel);
         scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPanel.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPanel.getVerticalScrollBar().setBlockIncrement(100);
         add(scrollPanel, BorderLayout.CENTER);
     }
 
